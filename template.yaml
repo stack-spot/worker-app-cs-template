@@ -1,0 +1,62 @@
+name: worker-app-cs-template
+description: plugin base para desenvolver um Worker completo utilizando C#, em execução em um cluster de contêiner
+types:
+  - app-template
+inputs:
+  - label: Project name
+    type: text
+    name: project_name
+    global: true
+    default: project-name
+  - label: Target Framework
+    type: text
+    default: "net5.0"
+    name: framework
+    global: true
+    items:
+      - "net5.0"  
+      - "net6.0"
+
+computedInputs: 
+  "version": "{% if global_inputs.framework == 'net6.0' %}{{'stackspot.worker'}}{% else %}{{'stackspot.worker.net5'}}{% endif %}"
+  "package": "{% if global_inputs.framework == 'net6.0' %}{{'StackSpot.Template.Worker'}}{% else %}{{'StackSpot.Template.Worker.5.0'}}{% endif %}"
+
+hooks:
+#package / apply template / install dotnet-format
+  - type: run
+    trigger: after-render
+    windows:      
+      - dotnet new -i {{computed_inputs.package}} --force
+      - dotnet new {{computed_inputs.version}} -n {{global_inputs.project_name}} -p {{global_inputs.project_name}} -o {{target_path | replace('\\','\/')}} --skipRestore true --force      
+      - dotnet new tool-manifest
+      - dotnet tool install --local dotnet-format
+    linux:
+      - dotnet new -i {{computed_inputs.package}} --force
+      - dotnet new {{computed_inputs.version}} -n {{global_inputs.project_name}} -p {{global_inputs.project_name}} -o {{target_path}} --skipRestore true --force      
+      - dotnet new tool-manifest
+      - dotnet tool install --local dotnet-format
+    mac:
+      - dotnet new -i {{computed_inputs.package}} --force
+      - dotnet new {{computed_inputs.version}} -n {{global_inputs.project_name}} -p {{global_inputs.project_name}} -o {{target_path}} --skipRestore true --force      
+      - dotnet new tool-manifest
+      - dotnet tool install --local dotnet-format
+
+displayName: Worker - Template
+
+picture: "template.png"
+
+category: backend, worker
+
+compatibility:
+  - net5.0
+  - net6.0
+
+about: about.md
+
+usage: usage.md
+
+useCase: useCase.md
+
+implementation: implementation.md
+
+technologies: [".NET", "C#"]
